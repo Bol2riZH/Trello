@@ -1,0 +1,22 @@
+{
+  "name": "trello",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bol2riZH/Trello.git"
+  },
+  "author": "Matthieu REUNGOAT",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bol2riZH/Trello/issues"
+  },
+  "homepage": "https://github.com/Bol2riZH/Trello#readme",
+  "prettier": {
+    "singleQuote": true
+  }
+}
