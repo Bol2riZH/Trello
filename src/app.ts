@@ -10,6 +10,8 @@ let actualContainer: HTMLDivElement,
   actualTextInput: HTMLInputElement,
   actualValidation: HTMLSpanElement;
 
+let dragSourceElement: HTMLElement;
+
 const addContainerBtn = document.querySelector(
   '.add-container-btn'
 ) as HTMLButtonElement;
@@ -78,6 +80,8 @@ const createNewItem = (e: SubmitEvent) => {
   const item = actualUl.lastElementChild as HTMLLIElement;
   const liBtn = item.querySelector('button') as HTMLButtonElement;
   deleteTaskFromItemHandler(liBtn);
+  addDragAndDropListener(item);
+  actualTextInput.value = '';
 };
 
 const createNewContainer = (e: SubmitEvent) => {
@@ -134,6 +138,7 @@ const addContainerListener = (currentContainer: HTMLDivElement) => {
   addItemBtnListener(currentAddItemBtn);
   closeFormBtnListener(currentCloseFormBtn);
   addFormSubmitListener(currentForm);
+  addDragAndDropListener(currentContainer);
 };
 
 const deleteBtnListener = (btn: HTMLButtonElement) => {
@@ -149,6 +154,13 @@ const closeFormBtnListener = (btn: HTMLButtonElement) => {
 
 const addFormSubmitListener = (form: HTMLFormElement) => {
   form.addEventListener('submit', createNewItem);
+};
+
+const addDragAndDropListener = (element: HTMLElement) => {
+  element.addEventListener('dragstart', dragStartHandler);
+  element.addEventListener('dragover', dragOverHandler);
+  element.addEventListener('drop', dropHandler);
+  element.addEventListener('dragend', dragEndHandler);
 };
 
 addContainerBtn.addEventListener('click', () => {
@@ -189,6 +201,72 @@ const addItemHandler = (e: MouseEvent) => {
   showItemContainer(btn);
   toggleForm(actualBtn, actualForm, true);
 };
+
+function dragStartHandler(this: HTMLElement, e: DragEvent) {
+  e.stopPropagation();
+  if (actualContainer) toggleForm(actualBtn, actualForm, false);
+  dragSourceElement = this;
+  e.dataTransfer?.setData('text/html', this.innerHTML);
+}
+
+const dragOverHandler = (e: DragEvent) => {
+  e.preventDefault();
+};
+
+function dropHandler(this: HTMLElement, e: DragEvent) {
+  e.stopPropagation();
+
+  const receptionEl = this;
+  if (
+    dragSourceElement.nodeName === 'LI' &&
+    receptionEl.classList.contains('.items-container')
+  ) {
+    (receptionEl.querySelector('ul') as HTMLUListElement).appendChild(
+      dragSourceElement
+    );
+    addDragAndDropListener(dragSourceElement);
+    deleteTaskFromItemHandler(
+      dragSourceElement.querySelector('button') as HTMLButtonElement
+    );
+  }
+  if (
+    dragSourceElement !== this &&
+    this.classList[0] == dragSourceElement.classList[0]
+  ) {
+    dragSourceElement.innerHTML = this.innerHTML;
+    this.innerHTML = e.dataTransfer?.getData('text/html') as string;
+    if (this.classList.contains('.items-container')) {
+      addContainerListener(this as HTMLDivElement);
+
+      this.querySelectorAll('li').forEach((li: HTMLLIElement) => {
+        deleteTaskFromItemHandler(
+          li.querySelector('button') as HTMLButtonElement
+        );
+        addDragAndDropListener(li);
+      });
+    } else {
+      addDragAndDropListener(this);
+      deleteTaskFromItemHandler(
+        this.querySelector('button') as HTMLButtonElement
+      );
+    }
+  }
+}
+
+function dragEndHandler(this: HTMLElement, e: DragEvent) {
+  e.stopPropagation();
+  if (this.classList.contains('items-container')) {
+    addContainerListener(this as HTMLDivElement);
+    this.querySelectorAll('li').forEach((li: HTMLLIElement) => {
+      deleteTaskFromItemHandler(
+        li.querySelector('button') as HTMLButtonElement
+      );
+      addDragAndDropListener(li);
+    });
+  } else {
+    addDragAndDropListener(this);
+  }
+}
 
 itemsContainer.forEach((container: HTMLDivElement) => {
   addContainerListener(container);

@@ -2,6 +2,7 @@
 // DECLARATION
 const itemsContainer = document.querySelectorAll('.items-container');
 let actualContainer, actualBtn, actualUl, actualForm, actualTextInput, actualValidation;
+let dragSourceElement;
 const addContainerBtn = document.querySelector('.add-container-btn');
 const addContainerForm = document.querySelector('.add-new-container form');
 const addContainerFormInput = document.querySelector('.add-new-container input');
@@ -48,6 +49,8 @@ const createNewItem = (e) => {
     const item = actualUl.lastElementChild;
     const liBtn = item.querySelector('button');
     deleteTaskFromItemHandler(liBtn);
+    addDragAndDropListener(item);
+    actualTextInput.value = '';
 };
 const createNewContainer = (e) => {
     e.preventDefault();
@@ -90,6 +93,7 @@ const addContainerListener = (currentContainer) => {
     addItemBtnListener(currentAddItemBtn);
     closeFormBtnListener(currentCloseFormBtn);
     addFormSubmitListener(currentForm);
+    addDragAndDropListener(currentContainer);
 };
 const deleteBtnListener = (btn) => {
     btn.addEventListener('click', deleteItemHandler);
@@ -102,6 +106,12 @@ const closeFormBtnListener = (btn) => {
 };
 const addFormSubmitListener = (form) => {
     form.addEventListener('submit', createNewItem);
+};
+const addDragAndDropListener = (element) => {
+    element.addEventListener('dragstart', dragStartHandler);
+    element.addEventListener('dragover', dragOverHandler);
+    element.addEventListener('drop', dropHandler);
+    element.addEventListener('dragend', dragEndHandler);
 };
 addContainerBtn.addEventListener('click', () => {
     toggleForm(addContainerBtn, addContainerForm, true);
@@ -133,6 +143,57 @@ const addItemHandler = (e) => {
     showItemContainer(btn);
     toggleForm(actualBtn, actualForm, true);
 };
+function dragStartHandler(e) {
+    var _a;
+    e.stopPropagation();
+    if (actualContainer)
+        toggleForm(actualBtn, actualForm, false);
+    dragSourceElement = this;
+    (_a = e.dataTransfer) === null || _a === void 0 ? void 0 : _a.setData('text/html', this.innerHTML);
+}
+const dragOverHandler = (e) => {
+    e.preventDefault();
+};
+function dropHandler(e) {
+    var _a;
+    e.stopPropagation();
+    const receptionEl = this;
+    if (dragSourceElement.nodeName === 'LI' &&
+        receptionEl.classList.contains('.items-container')) {
+        receptionEl.querySelector('ul').appendChild(dragSourceElement);
+        addDragAndDropListener(dragSourceElement);
+        deleteTaskFromItemHandler(dragSourceElement.querySelector('button'));
+    }
+    if (dragSourceElement !== this &&
+        this.classList[0] == dragSourceElement.classList[0]) {
+        dragSourceElement.innerHTML = this.innerHTML;
+        this.innerHTML = (_a = e.dataTransfer) === null || _a === void 0 ? void 0 : _a.getData('text/html');
+        if (this.classList.contains('.items-container')) {
+            addContainerListener(this);
+            this.querySelectorAll('li').forEach((li) => {
+                deleteTaskFromItemHandler(li.querySelector('button'));
+                addDragAndDropListener(li);
+            });
+        }
+        else {
+            addDragAndDropListener(this);
+            deleteTaskFromItemHandler(this.querySelector('button'));
+        }
+    }
+}
+function dragEndHandler(e) {
+    e.stopPropagation();
+    if (this.classList.contains('items-container')) {
+        addContainerListener(this);
+        this.querySelectorAll('li').forEach((li) => {
+            deleteTaskFromItemHandler(li.querySelector('button'));
+            addDragAndDropListener(li);
+        });
+    }
+    else {
+        addDragAndDropListener(this);
+    }
+}
 itemsContainer.forEach((container) => {
     addContainerListener(container);
 });
