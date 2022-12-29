@@ -61,6 +61,13 @@ const deleteItemHandler = (e: MouseEvent) => {
   containers[btnArray.indexOf(btn)].remove();
 };
 
+const deleteTaskHandler = (btn: HTMLButtonElement) => {
+  btn.addEventListener('click', () => {
+    const elToRemove = btn.parentElement as HTMLLIElement;
+    elToRemove.remove();
+  });
+};
+
 const addItemHandler = (e: MouseEvent) => {
   const btn = e.target as HTMLButtonElement;
   actualContainer && toggleForm(actualBtn, actualForm, false);
@@ -91,6 +98,28 @@ const setContainerItem = (btn: HTMLButtonElement) => {
   actualValidation = actualContainer.querySelector(
     '.validation-msg'
   ) as HTMLSpanElement;
+};
+
+const createNewItem = (e: SubmitEvent) => {
+  e.preventDefault();
+  // validation
+  if (actualTextInput.value.length === 0) {
+    return (actualValidation.textContent = 'Must ba at least 1 character long');
+  } else {
+    actualValidation.textContent = '';
+  }
+  // create item
+  const itemContent = actualTextInput.value;
+  const li = `
+    <li class="item" draggable="true">
+    <p>${itemContent}</p>
+    <button>X</button>
+    </li>`;
+  actualUl.insertAdjacentHTML('beforeend', li);
+
+  const item = actualUl.lastElementChild as HTMLLIElement;
+  const liBtn = item.querySelector('button') as HTMLButtonElement;
+  deleteTaskHandler(liBtn);
 };
 
 itemsContainer.forEach((container: HTMLDivElement) => {

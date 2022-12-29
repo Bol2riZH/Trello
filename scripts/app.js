@@ -35,6 +35,12 @@ const deleteItemHandler = (e) => {
     ];
     containers[btnArray.indexOf(btn)].remove();
 };
+const deleteTaskHandler = (btn) => {
+    btn.addEventListener('click', () => {
+        const elToRemove = btn.parentElement;
+        elToRemove.remove();
+    });
+};
 const addItemHandler = (e) => {
     const btn = e.target;
     actualContainer && toggleForm(actualBtn, actualForm, false);
@@ -58,6 +64,27 @@ const setContainerItem = (btn) => {
     actualForm = actualContainer.querySelector('form');
     actualTextInput = actualContainer.querySelector('input');
     actualValidation = actualContainer.querySelector('.validation-msg');
+};
+const createNewItem = (e) => {
+    e.preventDefault();
+    // validation
+    if (actualTextInput.value.length === 0) {
+        return (actualValidation.textContent = 'Must ba at least 1 character long');
+    }
+    else {
+        actualValidation.textContent = '';
+    }
+    // create item
+    const itemContent = actualTextInput.value;
+    const li = `
+    <li class="item" draggable="true">
+    <p>${itemContent}</p>
+    <button>X</button>
+    </li>`;
+    actualUl.insertAdjacentHTML('beforeend', li);
+    const item = actualUl.lastElementChild;
+    const liBtn = item.querySelector('button');
+    deleteTaskHandler(liBtn);
 };
 itemsContainer.forEach((container) => {
     addContainerListener(container);
